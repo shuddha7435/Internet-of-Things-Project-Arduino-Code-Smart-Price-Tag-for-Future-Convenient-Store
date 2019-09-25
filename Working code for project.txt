@@ -1,0 +1,95 @@
+/************************ Adafruit IO Config *******************************/
+
+
+
+// comment out the following two lines if you are using fona or ethernet
+#include "AdafruitIO_WiFi.h"
+AdafruitIO_WiFi io(IO_USERNAME, IO_KEY, WIFI_SSID, WIFI_PASS);
+
+
+/******************************* FONA **************************************/
+
+// the AdafruitIO_FONA client will work with the following boards:
+//   - Feather 32u4 FONA -> https://www.adafruit.com/product/3027
+
+// uncomment the following two lines for 32u4 FONA,
+// and comment out the AdafruitIO_WiFi client in the WIFI section
+// #include "AdafruitIO_FONA.h"
+// AdafruitIO_FONA io(IO_USERNAME, IO_KEY);
+
+
+/**************************** ETHERNET ************************************/
+
+// the AdafruitIO_Ethernet client will work with the following boards:
+//   - Ethernet FeatherWing -> https://www.adafruit.com/products/3201
+
+// uncomment the following two lines for ethernet,
+// and comment out the AdafruitIO_WiFi client in the WIFI section
+// #include "AdafruitIO_Ethernet.h"
+// AdafruitIO_Ethernet io(IO_USERNAME, IO_KEY);
+
+
+
+
+
+
+#include "config.h"
+
+/*
+ * PIR sensor tester
+ */
+ 
+int ledPin = 12;                // choose the pin for the LED
+int inputPin = 14;               // choose the input pin (for PIR sensor)
+int pirState = LOW;             // we start, assuming no motion detected
+int val = 0;                    // variable for reading the pin status
+
+AdafruitIO_Feed *switch_pnt = io.feed("DataStream"); // using 'switch_pnt' here are var name since 'switch' is reserved word
+ 
+void setup() {
+  pinMode(ledPin, OUTPUT);      // declare LED as output
+  pinMode(inputPin, INPUT);     // declare sensor as input
+ 
+  Serial.begin(9600);
+
+  // connect to io.adafruit.com
+  io.connect();
+
+  // wait for a connection
+  while(io.status() < AIO_CONNECTED) {
+    Serial.print(".");
+    delay(500);
+     //io.connect();
+  }
+  
+}
+ 
+void loop(){
+
+ io.run();
+  
+  val = digitalRead(inputPin);  // read input value
+  if (val == HIGH) {            // check if the input is HIGH
+    digitalWrite(ledPin, HIGH);  // turn LED ON
+    if (pirState == LOW) {
+      // we have just turned on
+      Serial.println("Motion detected!");
+      // We only want to print on the output change, not state
+      pirState = HIGH;
+      switch_pnt->save("Before price is 0.90Updated price is 1.10Congratulation You get 10%discount based on your previous purchases
+Before price is $0.90Updated price is $0.81 Congratulation You get 10% discount based on your previous purchases");
+    }
+  } else {
+    digitalWrite(ledPin, LOW); // turn LED OFF
+    if (pirState == HIGH){
+      // we have just turned of
+      Serial.println("Motion ended!");
+      // We only want to print on the output change, not state
+      pirState = LOW;
+    }
+  }
+}
+
+
+
+
